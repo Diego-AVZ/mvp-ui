@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Network, TrendingUp, Zap, Info } from 'lucide-react';
+import { TrendingUp, Plus, DollarSign, ArrowUpDown, Shield, X, Info } from 'lucide-react';
 
 interface Node {
   id: string;
@@ -11,6 +11,13 @@ interface Node {
   risk?: 'low' | 'medium' | 'high';
   x?: number;
   y?: number;
+  color?: string;
+  actions?: {
+    label: string;
+    icon: React.ComponentType<any>;
+    value?: string;
+    color: string;
+  }[];
 }
 
 interface Link {
@@ -25,23 +32,99 @@ const DeFiGraph: React.FC = () => {
   const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
 
   const nodes: Node[] = [
-    { id: 'uniswap', name: 'Uniswap V3', type: 'protocol', tvl: 2500000, apr: 12.5, risk: 'medium' },
-    { id: 'aave', name: 'Aave', type: 'protocol', tvl: 1800000, apr: 8.2, risk: 'low' },
-    { id: 'compound', name: 'Compound', type: 'protocol', tvl: 1200000, apr: 6.8, risk: 'low' },
-    { id: 'yield-fund', name: 'Yield Fund', type: 'fund', tvl: 750000, apr: 15.2, risk: 'medium' },
-    { id: 'delta-fund', name: 'Delta Fund', type: 'fund', tvl: 450000, apr: 9.8, risk: 'high' },
-    { id: 'liquidity-bundle', name: 'Liquidity Bundle', type: 'bundle', tvl: 320000, apr: 11.3, risk: 'medium' },
-    { id: 'arbitrage-bundle', name: 'Arbitrage Bundle', type: 'bundle', tvl: 180000, apr: 7.5, risk: 'high' },
+    { 
+      id: 'flowfi', 
+      name: 'FlowFi', 
+      type: 'fund', 
+      tvl: 7500000, 
+      apr: 12.5, 
+      risk: 'low',
+      color: '#3b82f6',
+      actions: [
+        { label: 'Deposit', icon: Plus, color: 'bg-blue-500' },
+        { label: 'Withdraw', icon: ArrowUpDown, color: 'bg-gray-500' },
+        { label: 'View Stats', icon: TrendingUp, color: 'bg-green-500' }
+      ]
+    },
+    { 
+      id: 'uniswap', 
+      name: 'UniV3 - LP', 
+      type: 'protocol', 
+      tvl: 2500000, 
+      apr: 12.5, 
+      risk: 'medium',
+      color: '#10b981',
+      actions: [
+        { label: 'Add Liquidity', icon: Plus, color: 'bg-green-500' },
+        { label: 'Claim fees', icon: DollarSign, value: '$107', color: 'bg-blue-500' },
+        { label: 'Withdraw', icon: ArrowUpDown, color: 'bg-gray-500' }
+      ]
+    },
+    { 
+      id: 'aave-supply', 
+      name: 'Aave Supply', 
+      type: 'protocol', 
+      tvl: 1800000, 
+      apr: 8.2, 
+      risk: 'low',
+      color: '#8b5cf6',
+      actions: [
+        { label: 'Supply', icon: Plus, color: 'bg-purple-500' },
+        { label: 'Claim Rewards', icon: DollarSign, color: 'bg-green-500' },
+        { label: 'Withdraw', icon: ArrowUpDown, color: 'bg-gray-500' }
+      ]
+    },
+    { 
+      id: 'aave-borrow', 
+      name: 'Aave Borrow', 
+      type: 'protocol', 
+      tvl: 1200000, 
+      apr: 6.8, 
+      risk: 'high',
+      color: '#f59e0b',
+      actions: [
+        { label: 'Borrow', icon: ArrowUpDown, color: 'bg-orange-500' },
+        { label: 'Repay', icon: Shield, color: 'bg-red-500' },
+        { label: 'View Position', icon: Info, color: 'bg-blue-500' }
+      ]
+    },
+    { 
+      id: 'swap', 
+      name: 'Swap', 
+      type: 'protocol', 
+      tvl: 500000, 
+      apr: 0, 
+      risk: 'low',
+      color: '#ef4444',
+      actions: [
+        { label: 'Swap Tokens', icon: ArrowUpDown, color: 'bg-red-500' },
+        { label: 'Set Slippage', icon: Shield, color: 'bg-blue-500' },
+        { label: 'View Rates', icon: TrendingUp, color: 'bg-green-500' }
+      ]
+    },
+    { 
+      id: 'uniswap-lp2', 
+      name: 'UniV3 - LP', 
+      type: 'protocol', 
+      tvl: 320000, 
+      apr: 11.3, 
+      risk: 'medium',
+      color: '#10b981',
+      actions: [
+        { label: 'Add Liquidity', icon: Plus, color: 'bg-green-500' },
+        { label: 'Claim fees', icon: DollarSign, value: '$45', color: 'bg-blue-500' },
+        { label: 'Withdraw', icon: ArrowUpDown, color: 'bg-gray-500' }
+      ]
+    }
   ];
 
   const links: Link[] = [
-    { source: 'yield-fund', target: 'uniswap', strength: 0.8 },
-    { source: 'yield-fund', target: 'aave', strength: 0.6 },
-    { source: 'delta-fund', target: 'uniswap', strength: 0.7 },
-    { source: 'delta-fund', target: 'compound', strength: 0.5 },
-    { source: 'liquidity-bundle', target: 'uniswap', strength: 0.9 },
-    { source: 'arbitrage-bundle', target: 'uniswap', strength: 0.6 },
-    { source: 'arbitrage-bundle', target: 'aave', strength: 0.4 },
+    { source: 'flowfi', target: 'uniswap', strength: 0.8 },
+    { source: 'flowfi', target: 'aave-supply', strength: 0.6 },
+    { source: 'uniswap', target: 'aave-supply', strength: 0.7 },
+    { source: 'aave-supply', target: 'aave-borrow', strength: 0.9 },
+    { source: 'aave-borrow', target: 'swap', strength: 0.6 },
+    { source: 'swap', target: 'uniswap-lp2', strength: 0.8 },
   ];
 
   useEffect(() => {
@@ -50,28 +133,57 @@ const DeFiGraph: React.FC = () => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = 800;
-    const height = 600;
+    const width = 1000;
+    const height = 700;
 
     svg.attr('width', width).attr('height', height);
+
+    // Create zoom behavior
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.1, 4])
+      .on('zoom', (event) => {
+        container.attr('transform', event.transform);
+      });
+
+    svg.call(zoom);
+
+    // Create main container for zoom/pan
+    const container = svg.append('g');
 
     // Create simulation
     const simulation = d3.forceSimulation(nodes)
       .force('link', d3.forceLink(links).id((d: any) => d.id).strength(0.1))
-      .force('charge', d3.forceManyBody().strength(-300))
-      .force('center', d3.forceCenter(width / 2, height / 2));
+      .force('charge', d3.forceManyBody().strength(-500))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide().radius(40));
 
-    // Create links
-    const link = svg.append('g')
+    // Create links with gradient
+    const defs = container.append('defs');
+    const gradient = defs.append('linearGradient')
+      .attr('id', 'linkGradient')
+      .attr('gradientUnits', 'userSpaceOnUse');
+
+    gradient.append('stop')
+      .attr('offset', '0%')
+      .attr('stop-color', '#3b82f6')
+      .attr('stop-opacity', 0.8);
+
+    gradient.append('stop')
+      .attr('offset', '100%')
+      .attr('stop-color', '#8b5cf6')
+      .attr('stop-opacity', 0.4);
+
+    const link = container.append('g')
       .selectAll('line')
       .data(links)
       .enter().append('line')
-      .attr('stroke', '#e5e7eb')
-      .attr('stroke-width', 2)
-      .attr('stroke-opacity', 0.6);
+      .attr('stroke', 'url(#linkGradient)')
+      .attr('stroke-width', 3)
+      .attr('stroke-opacity', 0.7)
+      .attr('stroke-linecap', 'round');
 
     // Create nodes
-    const node = svg.append('g')
+    const node = container.append('g')
       .selectAll('g')
       .data(nodes)
       .enter().append('g')
@@ -80,31 +192,29 @@ const DeFiGraph: React.FC = () => {
         .on('drag', dragged)
         .on('end', dragended));
 
-    // Add circles for nodes
+    // Add circles for nodes with gradient
     node.append('circle')
       .attr('r', (d) => {
-        if (d.type === 'protocol') return 20;
-        if (d.type === 'fund') return 16;
-        return 12;
+        if (d.type === 'fund') return 35;
+        if (d.type === 'protocol') return 30;
+        return 25;
       })
-      .attr('fill', (d) => {
-        if (d.type === 'protocol') return '#3b82f6';
-        if (d.type === 'fund') return '#10b981';
-        return '#8b5cf6';
-      })
+      .attr('fill', (d) => d.color || '#3b82f6')
       .attr('stroke', '#fff')
-      .attr('stroke-width', 2)
+      .attr('stroke-width', 3)
       .style('cursor', 'pointer')
+      .style('filter', 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))')
       .on('mouseover', (event, d) => {
         setHoveredNode(d);
         d3.select(event.currentTarget)
           .transition()
           .duration(200)
           .attr('r', () => {
-            if (d.type === 'protocol') return 25;
-            if (d.type === 'fund') return 20;
-            return 16;
-          });
+            if (d.type === 'fund') return 40;
+            if (d.type === 'protocol') return 35;
+            return 30;
+          })
+          .style('filter', 'drop-shadow(0 8px 16px rgba(0,0,0,0.2))');
       })
       .on('mouseout', (event, d) => {
         setHoveredNode(null);
@@ -112,23 +222,46 @@ const DeFiGraph: React.FC = () => {
           .transition()
           .duration(200)
           .attr('r', () => {
-            if (d.type === 'protocol') return 20;
-            if (d.type === 'fund') return 16;
-            return 12;
-          });
+            if (d.type === 'fund') return 35;
+            if (d.type === 'protocol') return 30;
+            return 25;
+          })
+          .style('filter', 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))');
       })
       .on('click', (_, d) => {
         setSelectedNode(d);
       });
 
-    // Add labels
+    // Add inner circles for depth
+    node.append('circle')
+      .attr('r', (d) => {
+        if (d.type === 'fund') return 25;
+        if (d.type === 'protocol') return 20;
+        return 15;
+      })
+      .attr('fill', 'rgba(255,255,255,0.3)')
+      .attr('stroke', 'none');
+
+    // Add labels with better styling
     node.append('text')
       .text((d) => d.name)
       .attr('text-anchor', 'middle')
-      .attr('dy', 35)
+      .attr('dy', 50)
+      .attr('font-size', '14px')
+      .attr('font-weight', '600')
+      .attr('fill', '#374151')
+      .style('pointer-events', 'none')
+      .style('text-shadow', '0 1px 2px rgba(255,255,255,0.8)');
+
+    // Add TVL labels
+    node.append('text')
+      .text((d) => d.tvl ? `$${(d.tvl / 1000000).toFixed(1)}M` : '')
+      .attr('text-anchor', 'middle')
+      .attr('dy', 70)
       .attr('font-size', '12px')
       .attr('font-weight', '500')
-      .attr('fill', '#374151');
+      .attr('fill', '#6b7280')
+      .style('pointer-events', 'none');
 
     // Update positions on simulation tick
     simulation.on('tick', () => {
@@ -163,23 +296,6 @@ const DeFiGraph: React.FC = () => {
     };
   }, []);
 
-  const getRiskColor = (risk?: string) => {
-    switch (risk) {
-      case 'low': return 'text-success-600 dark:text-success-400 bg-success-50 dark:bg-success-900/20';
-      case 'medium': return 'text-warning-600 dark:text-warning-400 bg-warning-50 dark:bg-warning-900/20';
-      case 'high': return 'text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-900/20';
-      default: return 'text-text-light-secondary dark:text-text-dark-secondary bg-gray-50 dark:bg-dark-700';
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'protocol': return Network;
-      case 'fund': return TrendingUp;
-      case 'bundle': return Zap;
-      default: return Info;
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -218,89 +334,125 @@ const DeFiGraph: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Graph Visualization */}
-        <div className="lg:col-span-3">
-          <div className="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 p-6">
-            <svg ref={svgRef} className="w-full h-full"></svg>
-          </div>
+      {/* Graph Visualization */}
+      <div className="relative">
+        <div className="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 p-6">
+          <svg ref={svgRef} className="w-full h-full"></svg>
+          
+          {/* Circular Modal for Selected Node */}
+          {selectedNode && (
+            <div 
+              className="absolute bg-white dark:bg-dark-800 rounded-full shadow-2xl border border-gray-200 dark:border-dark-700 p-6 z-10"
+              style={{
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '320px',
+                height: '320px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedNode(null)}
+                className="absolute top-4 right-4 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              {/* Node info */}
+              <div className="text-center mb-6">
+                <div 
+                  className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center text-white font-bold text-lg"
+                  style={{ backgroundColor: selectedNode.color }}
+                >
+                  {selectedNode.name.charAt(0)}
+                </div>
+                <h3 className="text-lg font-semibold text-text-light dark:text-text-dark mb-1">
+                  {selectedNode.name}
+                </h3>
+                {selectedNode.tvl && (
+                  <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                    TVL: ${(selectedNode.tvl / 1000000).toFixed(1)}M
+                  </p>
+                )}
+                {selectedNode.apr && (
+                  <p className="text-sm text-success-600 dark:text-success-400 font-medium">
+                    APR: {selectedNode.apr}%
+                  </p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2 w-full">
+                {selectedNode.actions?.map((action, index) => (
+                  <button
+                    key={index}
+                    className={`w-full px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${action.color}`}
+                  >
+                    <action.icon className="h-4 w-4" />
+                    <span>{action.label}</span>
+                    {action.value && (
+                      <span className="ml-auto text-xs bg-white/20 px-2 py-1 rounded">
+                        {action.value}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Hover Info Tooltip */}
+          {hoveredNode && !selectedNode && (
+            <div 
+              className="absolute bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-gray-200 dark:border-dark-700 p-3 z-10"
+              style={{
+                left: '20px',
+                top: '20px',
+                maxWidth: '250px'
+              }}
+            >
+              <div className="flex items-center space-x-2 mb-2">
+                <div 
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: hoveredNode.color }}
+                ></div>
+                <span className="font-medium text-text-light dark:text-text-dark">
+                  {hoveredNode.name}
+                </span>
+              </div>
+              {hoveredNode.tvl && (
+                <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                  TVL: ${(hoveredNode.tvl / 1000000).toFixed(1)}M
+                </p>
+              )}
+              {hoveredNode.apr && (
+                <p className="text-sm text-success-600 dark:text-success-400">
+                  APR: {hoveredNode.apr}%
+                </p>
+              )}
+              <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary mt-1">
+                Click for actions
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {/* Hovered Node Info */}
-          {hoveredNode && (
-            <div className="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 p-4">
-              <h3 className="text-lg font-semibold text-text-light dark:text-text-dark mb-3">Node Info</h3>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  {React.createElement(getTypeIcon(hoveredNode.type), { className: "h-4 w-4 text-text-light-secondary dark:text-text-dark-secondary" })}
-                  <span className="font-medium text-text-light dark:text-text-dark">{hoveredNode.name}</span>
-                </div>
-                {hoveredNode.tvl && (
-                  <div>
-                    <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">TVL: </span>
-                    <span className="font-semibold text-text-light dark:text-text-dark">${(hoveredNode.tvl / 1000000).toFixed(1)}M</span>
-                  </div>
-                )}
-                {hoveredNode.apr && (
-                  <div>
-                    <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">APR: </span>
-                    <span className="font-semibold text-success-600 dark:text-success-400">{hoveredNode.apr}%</span>
-                  </div>
-                )}
-                {hoveredNode.risk && (
-                  <div>
-                    <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Risk: </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskColor(hoveredNode.risk)}`}>
-                      {hoveredNode.risk}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Selected Node Actions */}
-          {selectedNode && (
-            <div className="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 p-4">
-              <h3 className="text-lg font-semibold text-text-light dark:text-text-dark mb-3">Actions</h3>
-              <div className="space-y-2">
-                <button className="w-full px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm">
-                  View Details
-                </button>
-                {selectedNode.type === 'fund' && (
-                  <button className="w-full px-3 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors text-sm">
-                    Invest
-                  </button>
-                )}
-                {selectedNode.type === 'bundle' && (
-                  <button className="w-full px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm">
-                    Execute
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* My Positions */}
-          <div className="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 p-4">
-            <h3 className="text-lg font-semibold text-text-light dark:text-text-dark mb-3">My Positions</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Yield Fund</span>
-                <span className="text-sm font-semibold text-success-600 dark:text-success-400">+8.3%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Liquidity Bundle</span>
-                <span className="text-sm font-semibold text-success-600 dark:text-success-400">+5.2%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Total Value</span>
-                <span className="text-sm font-semibold text-text-light dark:text-text-dark">$12,450</span>
-              </div>
-            </div>
-          </div>
+        {/* Controls */}
+        <div className="absolute bottom-4 right-4 flex space-x-2">
+          <button 
+            onClick={() => setSelectedNode(null)}
+            className="px-4 py-2 bg-white dark:bg-dark-800 text-text-light-secondary dark:text-text-dark-secondary rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+          >
+            Reset View
+          </button>
+          <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+            Export Data
+          </button>
         </div>
       </div>
     </div>
