@@ -130,13 +130,19 @@ const DeFiGraph: React.FC = () => {
   useEffect(() => {
     if (!svgRef.current) return;
 
+    // Detect dark mode
+    const isDark = document.documentElement.classList.contains('dark');
+
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = 1000;
-    const height = 700;
+    const width = 800;
+    const height = 500;
 
     svg.attr('width', width).attr('height', height);
+
+    // Create main container for zoom/pan
+    const container = svg.append('g');
 
     // Create zoom behavior
     const zoom = d3.zoom<SVGSVGElement, unknown>()
@@ -146,9 +152,6 @@ const DeFiGraph: React.FC = () => {
       });
 
     svg.call(zoom);
-
-    // Create main container for zoom/pan
-    const container = svg.append('g');
 
     // Create simulation
     const simulation = d3.forceSimulation(nodes)
@@ -249,9 +252,9 @@ const DeFiGraph: React.FC = () => {
       .attr('dy', 50)
       .attr('font-size', '14px')
       .attr('font-weight', '600')
-      .attr('fill', '#374151')
+      .attr('fill', isDark ? '#e5e7eb' : '#374151')
       .style('pointer-events', 'none')
-      .style('text-shadow', '0 1px 2px rgba(255,255,255,0.8)');
+      .style('text-shadow', isDark ? '0 1px 2px rgba(0,0,0,0.8)' : '0 1px 2px rgba(255,255,255,0.8)');
 
     // Add TVL labels
     node.append('text')
@@ -260,7 +263,7 @@ const DeFiGraph: React.FC = () => {
       .attr('dy', 70)
       .attr('font-size', '12px')
       .attr('font-weight', '500')
-      .attr('fill', '#6b7280')
+      .attr('fill', isDark ? '#9ca3af' : '#6b7280')
       .style('pointer-events', 'none');
 
     // Update positions on simulation tick
@@ -337,7 +340,11 @@ const DeFiGraph: React.FC = () => {
       {/* Graph Visualization */}
       <div className="relative">
         <div className="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 p-6">
-          <svg ref={svgRef} className="w-full h-full"></svg>
+          <svg 
+            ref={svgRef} 
+            className="w-full h-full"
+            style={{ minHeight: '500px' }}
+          ></svg>
           
           {/* Circular Modal for Selected Node */}
           {selectedNode && (
