@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingUp, Plus, Eye, DollarSign, Users, Calendar } from 'lucide-react';
 import { mockFunds } from '../data/mockData';
-import { Fund } from '../types';
+import type { Fund } from '../types';
 
 const Funds: React.FC = () => {
   const [selectedFund, setSelectedFund] = useState<Fund | null>(null);

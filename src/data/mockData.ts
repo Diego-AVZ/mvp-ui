@@ -1,4 +1,4 @@
-import { Fund, StrategyBundle, ChartData, UserPosition, ProtocolStats, Transaction } from '../types';
+import type { Fund, StrategyBundle, ChartData, UserPosition, ProtocolStats, Transaction } from '../types';
 
 // Datos mockeados para Funds
 export const mockFunds: Fund[] = [

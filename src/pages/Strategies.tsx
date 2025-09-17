@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Package, Play, TrendingUp, AlertTriangle, Shield, Zap } from 'lucide-react';
 import { mockStrategyBundles } from '../data/mockData';
-import { StrategyBundle } from '../types';
+import type { StrategyBundle } from '../types';
 
 const Strategies: React.FC = () => {
   const [selectedBundle, setSelectedBundle] = useState<StrategyBundle | null>(null);

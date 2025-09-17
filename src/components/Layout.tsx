@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { TrendingUp, Package, Network, BarChart3, Wallet, Home, User } from 'lucide-react';
+import { TrendingUp, Package, Network, BarChart3, Wallet, Home } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 interface LayoutProps {
