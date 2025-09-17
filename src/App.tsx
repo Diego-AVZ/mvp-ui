@@ -13,7 +13,7 @@ import './App.css';
 function App() {
   return (
     <ThemeProvider>
-      <Router>
+      <Router basename="/mvp-ui">
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
