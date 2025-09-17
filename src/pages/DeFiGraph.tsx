@@ -121,7 +121,6 @@ const DeFiGraph: React.FC = () => {
   const links: Link[] = [
     { source: 'flowfi', target: 'uniswap', strength: 0.8 },
     { source: 'flowfi', target: 'aave-supply', strength: 0.6 },
-    { source: 'uniswap', target: 'aave-supply', strength: 0.7 },
     { source: 'aave-supply', target: 'aave-borrow', strength: 0.9 },
     { source: 'aave-borrow', target: 'swap', strength: 0.6 },
     { source: 'swap', target: 'uniswap-lp2', strength: 0.8 },
@@ -156,9 +155,11 @@ const DeFiGraph: React.FC = () => {
     // Create simulation
     const simulation = d3.forceSimulation(nodes)
       .force('link', d3.forceLink(links).id((d: any) => d.id).strength(0.1))
-      .force('charge', d3.forceManyBody().strength(-500))
+      .force('charge', d3.forceManyBody().strength((d: any) => d.id === 'flowfi' ? -800 : -500)) // FlowFi más repulsión
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(40));
+      .force('collision', d3.forceCollide().radius((d: any) => d.id === 'flowfi' ? 80 : 40)) // FlowFi más espacio
+      .force('x', d3.forceX((d: any) => d.id === 'flowfi' ? width / 2 : d.x || width / 2).strength((d: any) => d.id === 'flowfi' ? 0.5 : 0)) // Centrar FlowFi
+      .force('y', d3.forceY((d: any) => d.id === 'flowfi' ? height / 2 : d.y || height / 2).strength((d: any) => d.id === 'flowfi' ? 0.5 : 0)); // Centrar FlowFi
 
     // Create links with gradient
     const defs = container.append('defs');
@@ -198,6 +199,7 @@ const DeFiGraph: React.FC = () => {
     // Add circles for nodes with gradient
     node.append('circle')
       .attr('r', (d) => {
+        if (d.id === 'flowfi') return 70; // FlowFi mucho más grande
         if (d.type === 'fund') return 35;
         if (d.type === 'protocol') return 30;
         return 25;
@@ -213,6 +215,7 @@ const DeFiGraph: React.FC = () => {
           .transition()
           .duration(200)
           .attr('r', () => {
+            if (d.id === 'flowfi') return 85; // FlowFi mucho más grande en hover
             if (d.type === 'fund') return 40;
             if (d.type === 'protocol') return 35;
             return 30;
@@ -225,6 +228,7 @@ const DeFiGraph: React.FC = () => {
           .transition()
           .duration(200)
           .attr('r', () => {
+            if (d.id === 'flowfi') return 70; // FlowFi vuelve a su tamaño normal
             if (d.type === 'fund') return 35;
             if (d.type === 'protocol') return 30;
             return 25;
@@ -238,6 +242,7 @@ const DeFiGraph: React.FC = () => {
     // Add inner circles for depth
     node.append('circle')
       .attr('r', (d) => {
+        if (d.id === 'flowfi') return 50; // FlowFi círculo interno mucho más grande
         if (d.type === 'fund') return 25;
         if (d.type === 'protocol') return 20;
         return 15;

@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Funds from './pages/Funds';
+import MyFund from './pages/MyFund';
 import Strategies from './pages/Strategies';
 import BundleBuilder from './pages/BundleBuilder';
 import DeFiGraph from './pages/DeFiGraph';
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/funds" element={<Layout><Funds /></Layout>} />
+          <Route path="/funds/my" element={<Layout><MyFund /></Layout>} />
           <Route path="/bundles" element={<Layout><Strategies /></Layout>} />
           <Route path="/bundles/builder" element={<Layout><BundleBuilder /></Layout>} />
           <Route path="/graph" element={<Layout><DeFiGraph /></Layout>} />
