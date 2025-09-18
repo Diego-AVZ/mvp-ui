@@ -66,3 +66,5 @@ export interface Transaction {
   status: 'pending' | 'completed' | 'failed';
   hash?: string;
 }
+
+

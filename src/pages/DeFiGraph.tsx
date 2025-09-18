@@ -152,14 +152,33 @@ const DeFiGraph: React.FC = () => {
 
     svg.call(zoom);
 
-    // Create simulation
+    // Initialize node positions to be centered
+    nodes.forEach((node, i) => {
+      if (node.id === 'flowfi') {
+        node.x = width / 2;
+        node.y = height / 2;
+        node.fx = width / 2; // Fijar FlowFi permanentemente
+        node.fy = height / 2;
+      } else {
+        // Position other nodes in a circle around FlowFi
+        const angle = (i - 1) * (2 * Math.PI) / (nodes.length - 1);
+        const radius = 150;
+        node.x = width / 2 + radius * Math.cos(angle);
+        node.y = height / 2 + radius * Math.sin(angle);
+      }
+    });
+
+    // Create simulation with FlowFi completely independent
     const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id((d: any) => d.id).strength(0.1))
-      .force('charge', d3.forceManyBody().strength((d: any) => d.id === 'flowfi' ? -800 : -500)) // FlowFi más repulsión
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius((d: any) => d.id === 'flowfi' ? 80 : 40)) // FlowFi más espacio
-      .force('x', d3.forceX((d: any) => d.id === 'flowfi' ? width / 2 : d.x || width / 2).strength((d: any) => d.id === 'flowfi' ? 0.5 : 0)) // Centrar FlowFi
-      .force('y', d3.forceY((d: any) => d.id === 'flowfi' ? height / 2 : d.y || height / 2).strength((d: any) => d.id === 'flowfi' ? 0.5 : 0)); // Centrar FlowFi
+      .force('link', d3.forceLink(links).id((d: any) => d.id).strength((d: any) => {
+        // Los enlaces no afectan a FlowFi
+        return (d.source.id === 'flowfi' || d.target.id === 'flowfi') ? 0 : 0.02;
+      }))
+      .force('charge', d3.forceManyBody().strength((d: any) => d.id === 'flowfi' ? 0 : -100)) // FlowFi sin repulsión
+      .force('center', d3.forceCenter(width / 2, height / 2).strength(0)) // Sin fuerza centrípeta
+      .force('collision', d3.forceCollide().radius((d: any) => d.id === 'flowfi' ? 80 : 40).strength(0.1)) // Muy poca colisión
+      .force('x', d3.forceX((d: any) => d.id === 'flowfi' ? width / 2 : d.x || width / 2).strength((d: any) => d.id === 'flowfi' ? 1 : 0)) // FlowFi completamente fijo en X
+      .force('y', d3.forceY((d: any) => d.id === 'flowfi' ? height / 2 : d.y || height / 2).strength((d: any) => d.id === 'flowfi' ? 1 : 0)); // FlowFi completamente fijo en Y
 
     // Create links with gradient
     const defs = container.append('defs');
@@ -207,7 +226,7 @@ const DeFiGraph: React.FC = () => {
       .attr('fill', (d) => d.color || '#3b82f6')
       .attr('stroke', '#fff')
       .attr('stroke-width', 3)
-      .style('cursor', 'pointer')
+      .style('cursor', (d) => d.id === 'flowfi' ? 'default' : 'pointer')
       .style('filter', 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))')
       .on('mouseover', (event, d) => {
         setHoveredNode(d);
@@ -283,20 +302,33 @@ const DeFiGraph: React.FC = () => {
     });
 
     function dragstarted(event: any, d: any) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      // FlowFi no se puede arrastrar
+      if (d.id === 'flowfi') return;
+      
+      if (!event.active) simulation.alphaTarget(0.05).restart(); // Muy poca energía
       d.fx = d.x;
       d.fy = d.y;
     }
 
     function dragged(event: any, d: any) {
+      // FlowFi no se puede arrastrar
+      if (d.id === 'flowfi') return;
+      
       d.fx = event.x;
       d.fy = event.y;
     }
 
     function dragended(event: any, d: any) {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
+      // FlowFi no se puede arrastrar
+      if (d.id === 'flowfi') return;
+      
+      if (!event.active) simulation.alphaTarget(0.01); // Energía mínima
+      // Mantener la posición fija por más tiempo para mayor flexibilidad
+      setTimeout(() => {
+        d.fx = null;
+        d.fy = null;
+        simulation.alphaTarget(0);
+      }, 2000); // Liberar después de 2 segundos
     }
 
     return () => {
@@ -314,7 +346,17 @@ const DeFiGraph: React.FC = () => {
           <p className="text-text-light-secondary dark:text-text-dark-secondary mt-2">Interactive visualization of the DeFi ecosystem</p>
         </div>
         <div className="flex space-x-2">
-          <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+          <button 
+            onClick={() => {
+              // Reset zoom
+              const svg = d3.select(svgRef.current);
+              svg.transition().duration(750).call(
+                d3.zoom<SVGSVGElement, unknown>().transform as any,
+                d3.zoomIdentity
+              );
+            }}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
             Reset View
           </button>
           <button className="px-4 py-2 bg-gray-100 dark:bg-dark-700 text-text-light-secondary dark:text-text-dark-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-dark-600 transition-colors">
@@ -348,7 +390,9 @@ const DeFiGraph: React.FC = () => {
           <svg 
             ref={svgRef} 
             className="w-full h-full"
-            style={{ minHeight: '500px' }}
+            style={{ minHeight: '500px', maxHeight: '600px' }}
+            viewBox="0 0 800 500"
+            preserveAspectRatio="xMidYMid meet"
           ></svg>
           
           {/* Circular Modal for Selected Node */}
