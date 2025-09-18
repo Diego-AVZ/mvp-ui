@@ -91,10 +91,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Wallet Info and Theme Toggle */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 dark:bg-dark-700 rounded-lg">
+              <Link 
+                to="/portfolio"
+                className="flex items-center space-x-2 px-3 py-2 bg-gray-50 dark:bg-dark-700 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-lg transition-colors cursor-pointer"
+              >
                 <Wallet className="h-4 w-4 text-text-light-secondary dark:text-text-dark-secondary" />
                 <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">0x1234...5678</span>
-              </div>
+              </Link>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-success-500 rounded-full"></div>
                 <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Arbitrum</span>

@@ -5,7 +5,7 @@ import { TrendingUp, Plus, DollarSign, ArrowUpDown, Shield, X, Info } from 'luci
 interface Node {
   id: string;
   name: string;
-  type: 'protocol' | 'fund' | 'bundle';
+  type: 'protocol' | 'fund' | 'bundle' | 'portfolio';
   tvl?: number;
   apr?: number;
   risk?: 'low' | 'medium' | 'high';
@@ -20,6 +20,13 @@ interface Node {
     value?: string;
     color: string;
   }[];
+  portfolioData?: {
+    investedAmount: number;
+    currentValue: number;
+    pnl: number;
+    pnlPercentage: number;
+    tokens: string[];
+  };
 }
 
 interface Link {
@@ -117,6 +124,61 @@ const DeFiGraph: React.FC = () => {
         { label: 'Claim fees', icon: DollarSign, value: '$45', color: 'bg-blue-500' },
         { label: 'Withdraw', icon: ArrowUpDown, color: 'bg-gray-500' }
       ]
+    },
+    // Nodos del Portfolio (estáticos)
+    { 
+      id: 'portfolio-fund', 
+      name: 'FlowFi Yield Fund', 
+      type: 'portfolio', 
+      color: '#3b82f6',
+      portfolioData: {
+        investedAmount: 10000,
+        currentValue: 10830,
+        pnl: 830,
+        pnlPercentage: 8.3,
+        tokens: ['USDC', 'ETH']
+      },
+      actions: [
+        { label: 'Añadir Liquidez', icon: Plus, color: 'bg-green-500' },
+        { label: 'Claim Fees', icon: DollarSign, value: '$125.5', color: 'bg-blue-500' },
+        { label: 'Retirar', icon: ArrowUpDown, color: 'bg-red-500' }
+      ]
+    },
+    { 
+      id: 'portfolio-strategy', 
+      name: 'Delta Neutral ETH/USDC', 
+      type: 'portfolio', 
+      color: '#8b5cf6',
+      portfolioData: {
+        investedAmount: 5000,
+        currentValue: 5425,
+        pnl: 425,
+        pnlPercentage: 8.5,
+        tokens: ['ETH', 'USDC']
+      },
+      actions: [
+        { label: 'Añadir Liquidez', icon: Plus, color: 'bg-green-500' },
+        { label: 'Claim Fees', icon: DollarSign, value: '$67.8', color: 'bg-blue-500' },
+        { label: 'Retirar', icon: ArrowUpDown, color: 'bg-red-500' }
+      ]
+    },
+    { 
+      id: 'portfolio-lp', 
+      name: 'LINK/ETH LP Uniswap', 
+      type: 'portfolio', 
+      color: '#10b981',
+      portfolioData: {
+        investedAmount: 2500,
+        currentValue: 2680,
+        pnl: 180,
+        pnlPercentage: 7.2,
+        tokens: ['LINK', 'ETH']
+      },
+      actions: [
+        { label: 'Añadir Liquidez', icon: Plus, color: 'bg-green-500' },
+        { label: 'Claim Fees', icon: DollarSign, value: '$45.2', color: 'bg-blue-500' },
+        { label: 'Retirar', icon: ArrowUpDown, color: 'bg-red-500' }
+      ]
     }
   ];
 
@@ -126,6 +188,10 @@ const DeFiGraph: React.FC = () => {
     { source: 'aave-supply', target: 'aave-borrow', strength: 0.9 },
     { source: 'aave-borrow', target: 'swap', strength: 0.6 },
     { source: 'swap', target: 'uniswap-lp2', strength: 0.8 },
+    // Enlaces del portfolio (conectados a FlowFi)
+    { source: 'flowfi', target: 'portfolio-fund', strength: 0.7 },
+    { source: 'flowfi', target: 'portfolio-strategy', strength: 0.7 },
+    { source: 'flowfi', target: 'portfolio-lp', strength: 0.7 },
   ];
 
   useEffect(() => {
@@ -155,15 +221,25 @@ const DeFiGraph: React.FC = () => {
     svg.call(zoom);
 
     // Initialize node positions to be centered
-    nodes.forEach((node, i) => {
+    nodes.forEach((node) => {
       if (node.id === 'flowfi') {
         node.x = width / 2;
         node.y = height / 2;
         node.fx = width / 2; // Fijar FlowFi permanentemente
         node.fy = height / 2;
+      } else if (node.type === 'portfolio') {
+        // Posicionar nodos del portfolio en una zona específica (lado derecho)
+        const portfolioIndex = nodes.filter(n => n.type === 'portfolio').indexOf(node);
+        const angle = portfolioIndex * (Math.PI / 2) + Math.PI / 4; // Entre 45° y 135°
+        const radius = 200;
+        node.x = width / 2 + radius * Math.cos(angle);
+        node.y = height / 2 + radius * Math.sin(angle);
+        // No fijar posiciones del portfolio - pueden moverse
       } else {
         // Position other nodes in a circle around FlowFi
-        const angle = (i - 1) * (2 * Math.PI) / (nodes.length - 1);
+        const nonPortfolioNodes = nodes.filter(n => n.type !== 'portfolio' && n.id !== 'flowfi');
+        const nonPortfolioIndex = nonPortfolioNodes.indexOf(node);
+        const angle = nonPortfolioIndex * (2 * Math.PI) / nonPortfolioNodes.length;
         const radius = 150;
         node.x = width / 2 + radius * Math.cos(angle);
         node.y = height / 2 + radius * Math.sin(angle);
@@ -239,6 +315,7 @@ const DeFiGraph: React.FC = () => {
             if (d.id === 'flowfi') return 85; // FlowFi mucho más grande en hover
             if (d.type === 'fund') return 40;
             if (d.type === 'protocol') return 35;
+            if (d.type === 'portfolio') return 40; // Portfolio del mismo tamaño que fund
             return 30;
           })
           .style('filter', 'drop-shadow(0 8px 16px rgba(0,0,0,0.2))');
@@ -252,6 +329,7 @@ const DeFiGraph: React.FC = () => {
             if (d.id === 'flowfi') return 70; // FlowFi vuelve a su tamaño normal
             if (d.type === 'fund') return 35;
             if (d.type === 'protocol') return 30;
+            if (d.type === 'portfolio') return 35; // Portfolio del mismo tamaño que fund
             return 25;
           })
           .style('filter', 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))');
@@ -266,6 +344,7 @@ const DeFiGraph: React.FC = () => {
         if (d.id === 'flowfi') return 50; // FlowFi círculo interno mucho más grande
         if (d.type === 'fund') return 25;
         if (d.type === 'protocol') return 20;
+        if (d.type === 'portfolio') return 25; // Portfolio del mismo tamaño que fund
         return 15;
       })
       .attr('fill', 'rgba(255,255,255,0.3)')
@@ -380,8 +459,8 @@ const DeFiGraph: React.FC = () => {
             <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Funds</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-primary-500 rounded-full"></div>
-            <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Bundles</span>
+            <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+            <span className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Portfolio</span>
           </div>
         </div>
       </div>
@@ -441,6 +520,22 @@ const DeFiGraph: React.FC = () => {
                   <p className="text-sm text-success-600 dark:text-success-400 font-medium">
                     APR: {selectedNode.apr}%
                   </p>
+                )}
+                {selectedNode.portfolioData && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                      Invertido: ${selectedNode.portfolioData.investedAmount.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">
+                      Valor: ${selectedNode.portfolioData.currentValue.toLocaleString()}
+                    </p>
+                    <p className={`text-sm font-medium ${selectedNode.portfolioData.pnl >= 0 ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
+                      P&L: ${selectedNode.portfolioData.pnl.toLocaleString()} ({selectedNode.portfolioData.pnlPercentage.toFixed(2)}%)
+                    </p>
+                    <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
+                      Tokens: {selectedNode.portfolioData.tokens.join(', ')}
+                    </p>
+                  </div>
                 )}
               </div>
 

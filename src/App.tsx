@@ -14,6 +14,7 @@ import FundsDocs from './pages/FundsDocs';
 import BundlesDocs from './pages/BundlesDocs';
 import DeFiChartDocs from './pages/DeFiChartDocs';
 import DeFiGraphDocs from './pages/DeFiGraphDocs';
+import Portfolio from './pages/Portfolio';
 import './App.css';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/docs/bundles" element={<BundlesDocs />} />
           <Route path="/docs/chart" element={<DeFiChartDocs />} />
           <Route path="/docs/graph" element={<DeFiGraphDocs />} />
+          <Route path="/portfolio" element={<Layout><Portfolio /></Layout>} />
         </Routes>
       </Router>
     </ThemeProvider>
