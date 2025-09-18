@@ -9,6 +9,11 @@ import Strategies from './pages/Strategies';
 import BundleBuilder from './pages/BundleBuilder';
 import DeFiGraph from './pages/DeFiGraph';
 import DeFiChart from './pages/TradingChart';
+import Docs from './pages/Docs';
+import FundsDocs from './pages/FundsDocs';
+import BundlesDocs from './pages/BundlesDocs';
+import DeFiChartDocs from './pages/DeFiChartDocs';
+import DeFiGraphDocs from './pages/DeFiGraphDocs';
 import './App.css';
 
 function App() {
@@ -24,6 +29,11 @@ function App() {
           <Route path="/bundles/builder" element={<Layout><BundleBuilder /></Layout>} />
           <Route path="/graph" element={<Layout><DeFiGraph /></Layout>} />
           <Route path="/chart" element={<Layout><DeFiChart /></Layout>} />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="/docs/funds" element={<FundsDocs />} />
+          <Route path="/docs/bundles" element={<BundlesDocs />} />
+          <Route path="/docs/chart" element={<DeFiChartDocs />} />
+          <Route path="/docs/graph" element={<DeFiGraphDocs />} />
         </Routes>
       </Router>
     </ThemeProvider>

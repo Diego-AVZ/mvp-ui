@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Package, Network, BarChart3, ArrowRight, Sparkles } from 'lucide-react';
+import { TrendingUp, Package, Network, BarChart3, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Landing: React.FC = () => {
@@ -49,9 +49,18 @@ const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-dark-900 dark:to-dark-800 transition-colors duration-200">
-      {/* Header with Theme Toggle */}
+      {/* Header with Theme Toggle and Docs Link */}
       <header className="absolute top-0 right-0 p-6 z-10">
-        <ThemeToggle />
+        <div className="flex items-center space-x-4">
+          <Link 
+            to="/docs" 
+            className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <BookOpen className="h-5 w-5 mr-2" />
+            <span className="text-sm font-medium">Documentation</span>
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Hero Section */}

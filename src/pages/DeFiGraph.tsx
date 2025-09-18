@@ -11,6 +11,8 @@ interface Node {
   risk?: 'low' | 'medium' | 'high';
   x?: number;
   y?: number;
+  fx?: number | null;
+  fy?: number | null;
   color?: string;
   actions?: {
     label: string;
